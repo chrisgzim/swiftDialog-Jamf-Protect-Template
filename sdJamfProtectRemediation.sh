@@ -42,15 +42,15 @@ function remediationwork() {
 				#replace "group" variable with Smart Group Tag, replace remediate with workflow for remediation
 				#leave the arithemetic variables as those help with tracking progress
 				group1)
-					remediate
+					#remediate
 					((rc++))
 				;;
 				group2)
-					remediate
+					#remediate
 					((rc++))
 				;;
 				group3)
-					remediate
+					#remediate
 					((rc++))
 				;;
 				*)
@@ -62,8 +62,8 @@ function remediationwork() {
 		#If Clean up is enabled, clean up
 		if [[ $SmartGroupCleanup -eq 1 ]]; then
 			# Makes sure your remediation didn't already delete the file ;)
-			if [[ -e $jpgd/$result ]]; then
-				rm -r $jpgd/$result
+			if [[ -e "$jpgd"/${result} ]]; then
+				rm -r "$jpgd"/${result}
 			fi
 			
 		fi
@@ -167,4 +167,6 @@ eval ${remediationtime[*]} & sleep 0.3
 remediationwork 
 completion
 ###################################
+
+
 

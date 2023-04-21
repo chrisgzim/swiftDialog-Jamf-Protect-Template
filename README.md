@@ -1,0 +1,1 @@
+# swiftDialog-Jamf-Protect-Template

@@ -16,19 +16,19 @@
 
 #### Parameters for Jamf #####
 # File Path / URL to Icon
-icon="$4"
+icon="${4:-"https://www.jcommerce.eu/wp-content/uploads/2022/04/tech_jamfprotect_alt_color.png"}"
 #Headline for the Warning
-titletext="$5"
+titletext="${5:-"Warning!"}"
 #Main Text for Warning
-message="$6"
+message="${6:-"Your computer has detected a potential threat. Please click OK so that we can make sure that your computer make sure that it is safe to use."}"
 #Title Text for Remediation
-title="$7"
+title="${7:-"Protecting your Mac"}"
 #Main Text for Remediation
-remediatemessage="$8"
+remediatemessage="${8:-"Please wait. We are working to make your Mac safe to use."}"
 #Headline for Remediation
-completiontitle="$9"
+completiontitle="${9:-"Remediation Complete"}"
 #Main Text for Completion
-completiontext="${10}"
+completiontext="${10:-"Your Mac is Safe to use"}"
 
 
 # Clean up Jamf Protect Smart Groups
@@ -39,6 +39,9 @@ SmartGroupCleanup="${11}" #Set parameter to 1 for "True"
 
 ########## Remediation Workflow(s) #########
 ########## VARIABLES TO EDIT HERE #######
+########## Instead of an exit 1, you can use 
+########## ((err++)) to track failed remediations 
+########################################
 
 function remediationwork() {
     for result in ${gtr[@]}; do

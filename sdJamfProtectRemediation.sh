@@ -16,7 +16,7 @@
 
 #### Parameters for Jamf #####
 # File Path / URL to Icon
-icon="${4:-"https://www.jcommerce.eu/wp-content/uploads/2022/04/tech_jamfprotect_alt_color.png"}"
+icon="${4:-"/Applications/JamfProtect.app/Contents/Resources/AppIcon.icns"}"
 #Headline for the Warning
 titletext="${5:-"Warning!"}"
 #Main Text for Warning

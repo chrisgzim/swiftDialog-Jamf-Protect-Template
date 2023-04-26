@@ -37,11 +37,15 @@ SmartGroupCleanup="${11}" #Set parameter to 1 for "True"
 
 ######## END JAMF PARAMATERS ####
 
-########## Remediation Workflow(s) #########
+########## Remediation Workflow(s) ############
 ########## VARIABLES TO EDIT HERE #######
 ########## Instead of an exit 1, you can use 
 ########## ((err++)) to track failed remediations 
-########################################
+##########
+########## You can add "progress text" using the 
+########## first line that is commented out in the 
+########## cased remediation. 
+################################################
 
 function remediationwork() {
     for result in ${gtr[@]}; do
@@ -67,6 +71,7 @@ function remediationwork() {
                     ((rc++))
                 ;;
                 *)
+                    #dialogupdateProtectRemediation "progresstext: Unknown Remediation"
                     echo "remediation not found for $result" >> $logfile
                     ((rc++))
                     ((err++))
@@ -93,6 +98,30 @@ function remediationwork() {
 
 ######## Scripting Logic for the workflow ########
 ### This is where the magic happens, please do not touch ####
+
+# Validate swiftDialog is installed
+
+if [ ! -e "/Library/Application Support/Dialog/Dialog.app" ]; then
+    echo "Dialog not found, installing..."
+    dialogURL=$(curl --silent --fail "https://api.github.com/repos/bartreardon/swiftDialog/releases/latest" | awk -F '"' "/browser_download_url/ && /pkg\"/ { print \$4; exit }")
+    expectedDialogTeamID="PWA5E9TQ59"
+    # Create a temp directory
+    workDir=$(/usr/bin/basename "$0")
+    tempDir=$(/usr/bin/mktemp -d "/private/tmp/$workDir.XXXXXX")
+    # Download latest version of swiftDialog
+    /usr/bin/curl --location --silent "$dialogURL" -o "$tempDir/Dialog.pkg"
+    # Verify download
+    teamID=$(/usr/sbin/spctl -a -vv -t install "$tempDir/Dialog.pkg" 2>&1 | awk '/origin=/ {print $NF }' | tr -d '()')
+    if [ "$expectedDialogTeamID" = "$teamID" ] || [ "$expectedDialogTeamID" = "" ]; then
+        /usr/sbin/installer -pkg "$tempDir/Dialog.pkg" -target /
+    else
+        echo "Team ID verification failed, could not continue..."
+        exit 6
+    fi
+    /bin/rm -Rf "$tempDir"
+else
+    echo "Dialog v$(dialog --version) installed, continuing..."
+fi
 
 ### Swift Dialog Binary and Application Location ####
 dialogBinary="/usr/local/bin/dialog"

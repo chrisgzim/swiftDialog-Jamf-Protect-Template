@@ -1,5 +1,5 @@
 # swiftDialog-Jamf-Protect-Template
-## A simple way to put all of your remediation in one script!
+## A simple way to put all of your remediations in one script!
 
 One of the coolest features of Jamf Protect is the ability to partner with Jamf Pro for remediation. The way this is accomplished is through smart groups and policies that are scoped to machines that have a Jamf Protect EA tied to them.
 

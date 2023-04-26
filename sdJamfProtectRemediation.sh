@@ -37,11 +37,15 @@ SmartGroupCleanup="${11}" #Set parameter to 1 for "True"
 
 ######## END JAMF PARAMATERS ####
 
-########## Remediation Workflow(s) #########
+########## Remediation Workflow(s) ############
 ########## VARIABLES TO EDIT HERE #######
 ########## Instead of an exit 1, you can use 
 ########## ((err++)) to track failed remediations 
-########################################
+##########
+########## You can add "progress text" using the 
+########## first line that is commented out in the 
+########## cased remediation. 
+################################################
 
 function remediationwork() {
     for result in ${gtr[@]}; do
@@ -67,6 +71,7 @@ function remediationwork() {
                     ((rc++))
                 ;;
                 *)
+                    #dialogupdateProtectRemediation "progresstext: Unknown Remediation"
                     echo "remediation not found for $result" >> $logfile
                     ((rc++))
                     ((err++))

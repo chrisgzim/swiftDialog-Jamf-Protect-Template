@@ -52,14 +52,17 @@ function remediationwork() {
                 #replace "group" variable with Smart Group Tag, replace remediate with workflow for remediation
                 #leave the arithemetic variables as those help with tracking progress
                 group1)
+                    #dialogupdateProtectRemediation "progresstext: $result or message here"
                     #remediate
                     ((rc++))
                 ;;
                 group2)
+                    #dialogupdateProtectRemediation "progresstext: $result or message here"
                     #remediate
                     ((rc++))
                 ;;
                 group3)
+                    #dialogupdateProtectRemediation "progresstext: $result or message here"
                     #remediate
                     ((rc++))
                 ;;

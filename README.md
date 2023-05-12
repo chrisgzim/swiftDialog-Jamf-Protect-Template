@@ -22,10 +22,11 @@ Hopefully you find this helpful and as always, please give some feedback!
 ## Screenshots of default behavior: 
 
 ### Initial Warning
-<img width="1440" alt="Screenshot 2023-05-12 at 12 39 38 PM" src="https://github.com/chrisgzim/swiftDialog-Jamf-Protect-Template/assets/101137859/59de368a-291c-4733-b961-65b9491a8e2c">
+<img width="1440" alt="Screenshot 2023-05-12 at 12 39 38 PM" src="https://github.com/chrisgzim/swiftDialog-Jamf-Protect-Template/assets/101137859/b9db052f-e80e-47c1-b993-26446071446b">
 
 ### Remediation Progress
-<img width="1440" alt="Screenshot 2023-05-12 at 12 42 42 PM" src="https://github.com/chrisgzim/swiftDialog-Jamf-Protect-Template/assets/101137859/2e6eafbd-1f4a-4deb-868b-eb63712a7b5d">
+<img width="1440" alt="Screenshot 2023-05-12 at 12 42 42 PM" src="https://github.com/chrisgzim/swiftDialog-Jamf-Protect-Template/assets/101137859/29a81201-68c7-47d4-b1e2-d89cc0288635">
 
 ### Remediation Complete
-<img width="1440" alt="Screenshot 2023-05-12 at 12 42 56 PM" src="https://github.com/chrisgzim/swiftDialog-Jamf-Protect-Template/assets/101137859/fccba0b0-f76e-4efd-94f3-dab6a49b64b3">
+<img width="1440" alt="Screenshot 2023-05-12 at 12 42 56 PM" src="https://github.com/chrisgzim/swiftDialog-Jamf-Protect-Template/assets/101137859/b0bcf57e-b5c6-47bb-9df9-0ae32bf048b6">
+

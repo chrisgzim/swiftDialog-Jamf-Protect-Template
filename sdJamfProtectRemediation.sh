@@ -12,6 +12,11 @@
 #
 # Definitely have to give a shoutout to @dan-snelson for some help with putting this together
 # You should absolutely check out Setup Your Mac
+# 
+# 
+#
+# This is a script I wrote for fun, it has no affliation with Jamf 
+# and is not a part of their support. 
 #############################################################
 
 
@@ -24,9 +29,9 @@ icon="${4:-"/Applications/JamfProtect.app/Contents/Resources/AppIcon.icns"}"
 #Will keep groups that do not have a remediation
 SmartGroupCleanup="$5" # Set this parameter to 1 to enable
 # Debug Mode -- will add the groups as necessary, give you a feel for the dialogs / progress bar and run all remediations as sleep commands
-debugMode="$6" # Set Debug to True to enable
+debugMode="$6" # Set Debug to True to enable #To test out errors / non-matching variables use the fe+=() variable
 # File path for Log File
-logfile="${$7: -"/tmp/protectremediation.txt"}"
+logfile="${4:-"/var/log/protectremediation.txt"}"  
 
 
 ###### Paramaters for swiftDialog ###############
@@ -217,26 +222,49 @@ function remediationwork() {
 
 ####### DEBUG FUNCTIONS ###############
 
+
+#### DEBUG Variable #######
+##### Fake Errors Array ###
+##### Use this to add "Unknown Remediation Errors in Debug Mode
+##### Simply type in values like so ( Fake Errors Go Here )
+fe+=()
+###########################
+
+
 function debugsetup() {
     # Write Group Files if not already there to maximize the prompts 
     for groupstomake in ${sg[@]}; do
-        if [[ ! -e $jpdg/$groupstomake ]]; then
-            echo "DEBUG: Creating the $groupstomake file now"
-            touch $jpdg/$groupstomake
+        if [[ ! -e "$jpgd"/$groupstomake ]]; then
+            echo "DEBUG: Creating the $groupstomake file now" >> $logfile
+            touch "$jpgd"/$groupstomake
         else
-            echo "DEBUG: There is already a $groupstomake here"
+            echo "DEBUG: There is already a $groupstomake here" >> $logfile
         fi
     done
+    # Creating Fake Groups if added in the fe array
+    if [[ -z ${fe[@]} ]]; then
+        echo "DEBUG: No fake groups added to the fe array" >> $logfile
+    else
+        for fakegroups in ${fe[@]}; do
+            if [[ -e $fakegroups ]]; then
+                echo "DEBUG: $fakegroups already detected, skipping for now"
+            else
+                echo "DEBUG: Adding $fakegroups to Protect Groups" >> $logfile
+                touch "$jpgd"/$fakegroups
+            fi
+        done
+    fi
 }
 
 function debugremediation() {
+    echo "DEBUG: Creating a test for ${#gtr[@]} remediations" >> $logfile
     for result in ${gtr[@]}; do
         #Variable needed for the Progress Bar
         piv=$(( 100 / er ))
-        case $result in
+        case ${sg[@]} in
             
             #leave the arithemetic variables as those help with tracking progress
-            ${sg[@]})
+            (*"$result"*)
                 debugupdate "progresstext: DEBUG: Doing Fake Remediation for $result"
                 sleep 5
                 echo "DEBUG: Faking the remediation for $result" >> $logfile
@@ -244,6 +272,7 @@ function debugremediation() {
             ;;
             *)
                 debugupdate "progresstext: DEBUG Unknown Remediation for $result"
+                sleep 5
                 echo "DEBUG: There does not appear to be a remediation for $result" >> $logfile
                 ((rc++))
                 ((err++))
@@ -259,7 +288,10 @@ function debugremediation() {
             else
                 echo "DEBUG: SMARTGROUPCLEANUP ENABLED but Could Not Delete $result (No Remediation Present or Remediation Failed)" >> $logfile
                 #resets the error check
+                echo "DEBUG: Resetting Error Check to Continue Calculations" >> $logfile
+                echo "DEBUG: $errcheck does not equal $err" >> $logfile
                 errcheck=$((err))
+                echo "DEBUG: $errcheck equals $err" >> $logfile
             fi
             
         fi
@@ -269,10 +301,23 @@ function debugremediation() {
     debugupdate "button1: enable"
 
 }
+
+function debugcomplete() {
+    
+    debugupdate "title: DEBUG MODE $completiontitle"
+    debugUpdate "message: $completiontext"
+    debugupdate "progresstext: Your Mac is Safe Now"
+    debugupdate "progress: complete"
+    debugupdate "button1: enable"
+    debugupdate "button1text: Continue"
+    
+    sleep 10
+}
 ######## Scripting Logic for the workflow ################
 ### This is where the magic happens, please do not touch ####
 #######################################################
 #Check for log file and create one if it doesn't exist
+
 if [[ ! -e $logfile ]]; then
     touch $logfile
     echo "No log file found, creating now"
@@ -308,6 +353,13 @@ dialogApp="/Library/Application\ Support/Dialog/Dialog.app/Contents/MacOS/Dialog
 
 #jamfprotect groups directory
 jpgd=/Library/Application\ Support/JamfProtect/groups
+
+# Create files if they don't exist if Debug is Enabled 
+if [[ $debugMode = "True" ]]; then
+    echo "DEBUG MODE: Debug Mode Enabled adding all of the Groups" >> $logfile
+    debugsetup
+fi
+
 #Make sure directory exists and grab the groups that need to be resolved
 if [[  -d "$jpgd" ]]; then
     #groups to remediate
@@ -315,12 +367,6 @@ if [[  -d "$jpgd" ]]; then
 else
     echo "Directory Not found, unable to remediate" >> $logfile
     exit 1
-fi
-
-# Create files if they don't exists if Debug is Enabled 
-if [[ $debugMode = "True" ]]; then
-    echo "DEBUG MODE: Debug Mode Enabled adding all of the Groups" >> $logfile
-    debugsetup
 fi
 
 #expected remediations
@@ -375,7 +421,6 @@ debugbeginningprompt="$dialogBinary \
 --message \"$message\" \
 --icon \"$icon\" \
 --button1text \"OK\" \
---blurscreen \
 --ontop \ "
 
 ## Remediation Prompt
@@ -386,7 +431,6 @@ debugremediationtime="$dialogBinary \
 --progress \
 --progresstext \"Remediating Vulnerabilities\" \
 --button1text \"Wait\" \
---blurscreen \
 --button1disabled \
 --quitkey k \
 --ontop \
@@ -442,15 +486,13 @@ function completion() {
     dialogupdateProtectRemediation "button1text: Continue"
     
     sleep 10
-    
-
 }
 ###########################################################
 
 #### Do the Work #################
 if [[ $debugMode = "True" ]]; then
-    eval ${debugbeginning}
-    eval ${debugremediationtime} & sleep 0.3
+    eval ${debugbeginningprompt}
+    eval ${debugremediationtime[*]} & sleep 0.3
     debugremediation
     debugcomplete
 else

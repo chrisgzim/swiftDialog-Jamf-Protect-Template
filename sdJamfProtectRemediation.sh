@@ -237,13 +237,13 @@ function debugremediation() {
             
             #leave the arithemetic variables as those help with tracking progress
             ${sg[@]})
-                #dialogupdateProtectRemediation "progresstext: $result or message here"
+                debugupdate "progresstext: DEBUG: Doing Fake Remediation for $result"
                 sleep 5
                 echo "DEBUG: Faking the remediation for $result" >> $logfile
                 ((rc++))
             ;;
             *)
-                #dialogupdateProtectRemediation "progresstext: Unknown Remediation"
+                debugupdate "progresstext: DEBUG Unknown Remediation for $result"
                 echo "DEBUG: There does not appear to be a remediation for $result" >> $logfile
                 ((rc++))
                 ((err++))

@@ -13,7 +13,7 @@ This is my first experience using swiftDialog and it is a really sweet project. 
 
 For the most part, everything that you need to change is all at the beginning of the script. My goal was to make this as simple as possible for admins. Just copy your remediation scripts and paste them into the template. 
 
-By default, there are only three remediations spots. However, I have added templates for up to 7 as well as a way to simply add your script to the remediation function. (There is also a template you can use to add as many as you would like! 
+By default, there are only three remediations spots. However, I have added templates for up to 7 as well as a way to simply add your script to the remediation function. (There is also a template you can use to add as many as you would like!)
 
 Just want to test the swiftDialog prompts? No problem! There is now a Debug Mode that you can use to help see what the different prompts look like. Each instance of "remediation" in debug will go ahead and run a sleep command for 5 seconds. (This way you can see the progress bar move as well.) 
 

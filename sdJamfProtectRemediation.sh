@@ -26,7 +26,7 @@ SmartGroupCleanup="$5" # Set this parameter to "True" to enable
 # Debug Mode -- will add the groups as necessary, give you a feel for the dialogs / progress bar and run all remediations as sleep commands
 debugMode="$6" # Set Debug to True to enable
 # File path for Log File
-logfile="${$5: -"/tmp/protectremediation.txt"}"
+logfile="${$7: -"/tmp/protectremediation.txt"}"
 
 
 ###### Paramaters for swiftDialog ###############

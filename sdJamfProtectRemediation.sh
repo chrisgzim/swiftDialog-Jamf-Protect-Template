@@ -14,14 +14,15 @@
 # You should absolutely check out Setup Your Mac
 #############################################################
 
-########## WHAT NEEDS TO BE FILLED OUT #################
+
+########### WHAT NEEDS TO BE FILLED OUT #################
 #### Parameters for Jamf #####
 
 # File Path / URL to Icon -- Defaults to the Jamf Protect Logo
 icon="${4:-"/Applications/JamfProtect.app/Contents/Resources/AppIcon.icns"}"
 #Have the Script do the cleanup of the smart groups (/Library/Application Support/JamfProtect/Groups/(group) 
 #Will keep groups that do not have a remediation
-SmartGroupCleanup="$5" # Set this parameter to "True" to enable
+SmartGroupCleanup="$5" # Set this parameter to 1 to enable
 # Debug Mode -- will add the groups as necessary, give you a feel for the dialogs / progress bar and run all remediations as sleep commands
 debugMode="$6" # Set Debug to True to enable
 # File path for Log File
@@ -271,11 +272,16 @@ function debugremediation() {
 ######## Scripting Logic for the workflow ################
 ### This is where the magic happens, please do not touch ####
 #######################################################
+#Check for log file and create one if it doesn't exist
+if [[ ! -e $logfile ]]; then
+    touch $logfile
+    echo "No log file found, creating now"
+fi
 
 # Validate swiftDialog is installed
 
 if [ ! -e "/Library/Application Support/Dialog/Dialog.app" ]; then
-    echo "Dialog not found, installing..."
+    echo "Dialog not found, installing..." >> $logfile
     dialogURL=$(curl --silent --fail "https://api.github.com/repos/bartreardon/swiftDialog/releases/latest" | awk -F '"' "/browser_download_url/ && /pkg\"/ { print \$4; exit }")
     expectedDialogTeamID="PWA5E9TQ59"
     # Create a temp directory
@@ -288,12 +294,12 @@ if [ ! -e "/Library/Application Support/Dialog/Dialog.app" ]; then
     if [ "$expectedDialogTeamID" = "$teamID" ] || [ "$expectedDialogTeamID" = "" ]; then
         /usr/sbin/installer -pkg "$tempDir/Dialog.pkg" -target /
     else
-        echo "Team ID verification failed, could not continue..."
+        echo "Team ID verification failed, could not continue..." >> $logfile
         exit 6
     fi
     /bin/rm -Rf "$tempDir"
 else
-    echo "Dialog v$(dialog --version) installed, continuing..."
+    echo "Dialog v$(dialog --version) installed, continuing..." >> $logfile
 fi
 
 ### Swift Dialog Binary and Application Location ####
@@ -307,12 +313,13 @@ if [[  -d "$jpgd" ]]; then
     #groups to remediate
     gtr+=($(/bin/ls "$jpgd"))
 else
-    echo "Directory Not found, unable to remediate"
+    echo "Directory Not found, unable to remediate" >> $logfile
     exit 1
 fi
 
 # Create files if they don't exists if Debug is Enabled 
 if [[ $debugMode = "True" ]]; then
+    echo "DEBUG MODE: Debug Mode Enabled adding all of the Groups" >> $logfile
     debugsetup
 fi
 
@@ -323,14 +330,7 @@ rc=0
 # Errors
 err=0
 errcheck=0
-# Path to a log file
 
-
-#Check for log file and create one if it doesn't exist
-if [[ ! -e $logfile ]]; then
-    touch $logfile
-    echo "No log file found, creating now"
-fi
 
 ######### SWIFT DIALOG FUNCTIONS ########
 
@@ -403,9 +403,23 @@ function debugupdate() {
     echo "$1" >> "$debugcommandfile"
 }
 
+### Clean up your Mess ###
+
+function fin() {
+    if [[ $debugMode = "True" ]]; then
+        echo "DEBUG MODE: Deleting tmp files" >> $logfile
+        rm -r $debugcommandfile
+        rm -r $debugwelcomecommandfile
+    else
+        rm -r $commandfile
+        rm -r $welcomecommandfile
+    fi
+}
+
 #Creates Working Files
 if [[ $debugMode = "True" ]]; then
-    echo "$debugremediationtime" >> $commandfile
+    echo "DEBUG MODE: Creating Debug Command File" >> $logfile
+    echo "$debugremediationtime" >> $debugcommandfile
 else
     echo "$remediatetime" >> $commandfile
 fi
@@ -427,19 +441,24 @@ function completion() {
     dialogupdateProtectRemediation "button1: enable"
     dialogupdateProtectRemediation "button1text: Continue"
     
+    sleep 10
+    
+
 }
 ###########################################################
 
 #### Do the Work #################
-if [[ $debugMode != "True" ]]; then
-    eval ${beginningprompt}
-    eval ${remediationtime[*]} & sleep 0.3
-    remediationwork
-    completion
-else
+if [[ $debugMode = "True" ]]; then
     eval ${debugbeginning}
     eval ${debugremediationtime} & sleep 0.3
     debugremediation
     debugcomplete
+else
+    eval ${beginningprompt}
+    eval ${remediationtime[*]} & sleep 0.3
+    remediationwork
+    completion
 fi
 ###################################
+
+fin

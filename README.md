@@ -21,7 +21,7 @@ Hopefully you find this helpful and as always, please give some feedback!
 
 ## Screenshots of default behavior: 
 
-### Intial Warning
+### Initial Warning
 <img width="1440" alt="Screenshot 2023-05-12 at 12 39 38 PM" src="https://github.com/chrisgzim/swiftDialog-Jamf-Protect-Template/assets/101137859/59de368a-291c-4733-b961-65b9491a8e2c">
 
 ### Remediation Progress

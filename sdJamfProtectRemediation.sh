@@ -14,8 +14,7 @@
 # You should absolutely check out Setup Your Mac
 #############################################################
 
-
-########### WHAT NEEDS TO BE FILLED OUT #################
+########## WHAT NEEDS TO BE FILLED OUT #################
 #### Parameters for Jamf #####
 
 # File Path / URL to Icon -- Defaults to the Jamf Protect Logo

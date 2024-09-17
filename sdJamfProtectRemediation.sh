@@ -327,7 +327,7 @@ fi
 
 if [ ! -e "/Library/Application Support/Dialog/Dialog.app" ]; then
     echo "Dialog not found, installing..." >> $logfile
-    dialogURL=$(curl --silent --fail "https://api.github.com/repos/bartreardon/swiftDialog/releases/latest" | awk -F '"' "/browser_download_url/ && /pkg\"/ { print \$4; exit }")
+    dialogURL=$(curl -L --silent --fail "https://api.github.com/repos/swiftDialog/swiftDialog/releases/latest" | awk -F '"' "/browser_download_url/ && /pkg\"/ { print \$4; exit }")
     expectedDialogTeamID="PWA5E9TQ59"
     # Create a temp directory
     workDir=$(/usr/bin/basename "$0")

@@ -27,28 +27,34 @@
 icon="${4:-"/Applications/JamfProtect.app/Contents/Resources/AppIcon.icns"}"
 #Have the Script do the cleanup of the smart groups (/Library/Application Support/JamfProtect/Groups/(group) 
 #Will keep groups that do not have a remediation
-SmartGroupCleanup="$5" # Set this parameter to 1 to enable
+SmartGroupCleanup="${5:-"true"}" # set to true by default. To turn off, use any value you want other than true.
 # Debug Mode -- will add the groups as necessary, give you a feel for the dialogs / progress bar and run all remediations as sleep commands
-debugMode="$6" # Set Debug to True to enable #To test out errors / non-matching variables use the fe+=() variable
+debugMode="$6" # Set Debug to true to enable #To test out errors / non-matching variables use the fe+=() variable
 # File path for Log File
-logfile="${4:-"/var/log/protectremediation.txt"}"  
+logfile="${7:-"/var/log/protectremediation.txt"}"
 
 
 ###### Paramaters for swiftDialog ###############
 #Headline for the Warning
 titletext="Warning"
 #Main Text for Warning
-message="Your computer has detected a potential threat. Please click OK so that we can make sure that your computer make sure that it is safe to use."
+message="Your computer has detected a potential threat. Please click OK so that we can make sure that your computer is safe to use."
 #Title Text for Remediation
 title="Protecting your Mac"
 #Main Text for Remediation
-remediatemessage="Please wait. We are working to make your Mac safe to use."
+remediatemessage="Please wait. Remediation in Progress. . ."
 #Headline for Remediation
 completiontitle="Remediation Complete"
 #Main Text for Completion
-completiontext="Your Mac is Safe to use"
+completiontext="Your Mac is now safe"
 ############# SwiftDialog Paramaters End ########
 
+################ LOG FUNCTION ###################
+function updatelog() {
+    echo -e "$( date +%Y-%m-%d\ %H:%M:%S ) - ${1}" | tee -a "${logfile}"
+}
+# you can use this with your remediation scripts too #
+################################################
 
 ########## Remediation Workflow(s) ############
 ########## VARIABLES TO EDIT HERE #######
@@ -169,7 +175,9 @@ function remediate3() {
 ########## You can add "progress text" using the first line that is commented out in the 
 ########## cased remediation. 
 ##############################################################################
+
 function remediationwork() {
+    if [[ $SmartGroupCleanup == "true" ]]; then updatelog "Smart Group Cleanup Enabled, will clean up after each remediation"; fi
     for result in ${gtr[@]}; do
         #Variable needed for the Progress Bar
         piv=$(( 100 / er ))
@@ -194,19 +202,19 @@ function remediationwork() {
                 ;;
                 *)
                     #dialogupdateProtectRemediation "progresstext: Unknown Remediation"
-                    echo "remediation not found for $result" >> $logfile
+                    updatelog "remediation not found for $result"
                     ((rc++))
                     ((err++))
                 ;;
             esac
         #If Clean up is enabled, clean up
-        if [[ $SmartGroupCleanup -eq 1 ]]; then
+        if [[ $SmartGroupCleanup == "true" ]]; then
             # Makes sure your remediation didn't already delete the file ;)
             if [[ -e "$jpgd"/${result} ]] && [[ $errcheck = $err ]]; then
-                rm -r "$jpgd"/${result}
-                
+                updatelog "Removing $result from the $jpgd folder"
+                rm -r "$jpgd/${result}"
             else
-                echo "Could Not Delete $result (No Remediation Present or Remediation Failed)" >> $logfile
+                updatelog "Could Not Delete $result (No Remediation Present or Remediation Failed)"
                 #resets the error check
                 errcheck=$((err))
             fi
@@ -235,21 +243,21 @@ function debugsetup() {
     # Write Group Files if not already there to maximize the prompts 
     for groupstomake in ${sg[@]}; do
         if [[ ! -e "$jpgd"/$groupstomake ]]; then
-            echo "DEBUG: Creating the $groupstomake file now" >> $logfile
+            updatelog "DEBUG: Creating the $groupstomake file now"
             touch "$jpgd"/$groupstomake
         else
-            echo "DEBUG: There is already a $groupstomake here" >> $logfile
+            updatelog "DEBUG: There is already a $groupstomake here"
         fi
     done
     # Creating Fake Groups if added in the fe array
     if [[ -z ${fe[@]} ]]; then
-        echo "DEBUG: No fake groups added to the fe array" >> $logfile
+        updatelog "DEBUG: No fake groups added to the fe array"
     else
         for fakegroups in ${fe[@]}; do
             if [[ -e $fakegroups ]]; then
-                echo "DEBUG: $fakegroups already detected, skipping for now"
+                updatelog "DEBUG: $fakegroups already detected, skipping for now"
             else
-                echo "DEBUG: Adding $fakegroups to Protect Groups" >> $logfile
+                updatelog "DEBUG: Adding $fakegroups to Protect Groups"
                 touch "$jpgd"/$fakegroups
             fi
         done
@@ -257,7 +265,7 @@ function debugsetup() {
 }
 
 function debugremediation() {
-    echo "DEBUG: Creating a test for ${#gtr[@]} remediations" >> $logfile
+    updatelog "DEBUG: Creating a test for ${#gtr[@]} remediations"
     for result in ${gtr[@]}; do
         #Variable needed for the Progress Bar
         piv=$(( 100 / er ))
@@ -267,13 +275,13 @@ function debugremediation() {
             (*"$result"*)
                 debugupdate "progresstext: DEBUG: Doing Fake Remediation for $result"
                 sleep 5
-                echo "DEBUG: Faking the remediation for $result" >> $logfile
+                updatelog "DEBUG: Faking the remediation for $result"
                 ((rc++))
             ;;
             *)
                 debugupdate "progresstext: DEBUG Unknown Remediation for $result"
                 sleep 5
-                echo "DEBUG: There does not appear to be a remediation for $result" >> $logfile
+                updatelog "DEBUG: There does not appear to be a remediation for $result"
                 ((rc++))
                 ((err++))
             ;;
@@ -282,16 +290,16 @@ function debugremediation() {
         if [[ $SmartGroupCleanup -eq 1 ]]; then
             # Makes sure your remediation didn't already delete the file ;)
             if [[ -e "$jpgd"/${result} ]] && [[ $errcheck = $err ]]; then
-                echo "DEBUG: SMARTGROUPCLEANUP ENABLED Deleting the $result from Protect Groups" >> $logfile
+                updatelog "DEBUG: SMARTGROUPCLEANUP ENABLED Deleting the $result from Protect Groups"
                 rm -r "$jpgd"/${result}
                 
             else
-                echo "DEBUG: SMARTGROUPCLEANUP ENABLED but Could Not Delete $result (No Remediation Present or Remediation Failed)" >> $logfile
+                updatelog "DEBUG: SMARTGROUPCLEANUP ENABLED but Could Not Delete $result (No Remediation Present or Remediation Failed)"
                 #resets the error check
-                echo "DEBUG: Resetting Error Check to Continue Calculations" >> $logfile
-                echo "DEBUG: $errcheck does not equal $err" >> $logfile
+                updatelog "DEBUG: Resetting Error Check to Continue Calculations"
+                updatelog "DEBUG: $errcheck does not equal $err"
                 errcheck=$((err))
-                echo "DEBUG: $errcheck equals $err" >> $logfile
+                updatelog "DEBUG: $errcheck equals $err"
             fi
             
         fi
@@ -323,10 +331,13 @@ if [[ ! -e $logfile ]]; then
     echo "No log file found, creating now"
 fi
 
+updatelog "Jamf Protect Template: Start of Log"
+
+
 # Validate swiftDialog is installed
 
 if [ ! -e "/Library/Application Support/Dialog/Dialog.app" ]; then
-    echo "Dialog not found, installing..." >> $logfile
+    updatelog "Dialog not found, installing..." 
     dialogURL=$(curl -L --silent --fail "https://api.github.com/repos/swiftDialog/swiftDialog/releases/latest" | awk -F '"' "/browser_download_url/ && /pkg\"/ { print \$4; exit }")
     expectedDialogTeamID="PWA5E9TQ59"
     # Create a temp directory
@@ -339,12 +350,12 @@ if [ ! -e "/Library/Application Support/Dialog/Dialog.app" ]; then
     if [ "$expectedDialogTeamID" = "$teamID" ] || [ "$expectedDialogTeamID" = "" ]; then
         /usr/sbin/installer -pkg "$tempDir/Dialog.pkg" -target /
     else
-        echo "Team ID verification failed, could not continue..." >> $logfile
+        updatelog "Team ID verification failed, could not continue..."
         exit 6
     fi
     /bin/rm -Rf "$tempDir"
 else
-    echo "Dialog v$(dialog --version) installed, continuing..." >> $logfile
+    updatelog "Dialog v$(dialog --version) installed, continuing..."
 fi
 
 ### Swift Dialog Binary and Application Location ####
@@ -352,20 +363,21 @@ dialogBinary="/usr/local/bin/dialog"
 dialogApp="/Library/Application\ Support/Dialog/Dialog.app/Contents/MacOS/Dialog"
 
 #jamfprotect groups directory
-jpgd=/Library/Application\ Support/JamfProtect/groups
+jpgd="/Library/Application Support/JamfProtect/groups"
 
 # Create files if they don't exist if Debug is Enabled 
-if [[ $debugMode = "True" ]]; then
-    echo "DEBUG MODE: Debug Mode Enabled adding all of the Groups" >> $logfile
+if [[ $debugMode = "true" ]]; then
+    updatelog "DEBUG MODE: Debug Mode Enabled adding all of the Groups" 
     debugsetup
 fi
 
 #Make sure directory exists and grab the groups that need to be resolved
-if [[  -d "$jpgd" ]]; then
+if [[ -d "$jpgd" ]]; then
     #groups to remediate
+    updatelog "Groups Identified. . . adding to array for remediation"
     gtr+=($(/bin/ls "$jpgd"))
 else
-    echo "Directory Not found, unable to remediate" >> $logfile
+    updatelog "Directory Not found, unable to remediate"
     exit 1
 fi
 
@@ -450,26 +462,30 @@ function debugupdate() {
 ### Clean up your Mess ###
 
 function fin() {
-    if [[ $debugMode = "True" ]]; then
-        echo "DEBUG MODE: Deleting tmp files" >> $logfile
+    if [[ $debugMode = "true" ]]; then
+        updatelog "DEBUG MODE: Deleting tmp files"
         rm -r $debugcommandfile
         rm -r $debugwelcomecommandfile
     else
+        updatelog "Removing tmp files"
         rm -r $commandfile
         rm -r $welcomecommandfile
     fi
+    
+    updatelog "Clean up complete"
+    updatelog "Jamf Protect Template: End of Log"
 }
 
 #Creates Working Files
-if [[ $debugMode = "True" ]]; then
-    echo "DEBUG MODE: Creating Debug Command File" >> $logfile
+if [[ $debugMode = "true" ]]; then
+    updatelog "DEBUG MODE: Creating Debug Command File"
     echo "$debugremediationtime" >> $debugcommandfile
 else
     echo "$remediatetime" >> $commandfile
 fi
 
 #starts progress bar
-if [[ $debugMode = "True" ]]; then
+if [[ $debugMode = "true" ]]; then
     debugupdate "progress: 1"
 else
     dialogupdateProtectRemediation "progress: 1"

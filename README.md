@@ -22,11 +22,13 @@ Hopefully you find this helpful and as always, please give some feedback!
 ## Screenshots of default behavior: 
 
 ### Initial Warning
-<img width="1440" alt="Screenshot 2023-05-12 at 12 39 38 PM" src="https://github.com/chrisgzim/swiftDialog-Jamf-Protect-Template/assets/101137859/b9db052f-e80e-47c1-b993-26446071446b">
+<img width="1512" alt="Screenshot 2024-10-02 at 3 55 52 AM" src="https://github.com/user-attachments/assets/e521f4b5-cbe3-4a14-8264-e0ae21ba8df8">
+
 
 ### Remediation Progress
-<img width="1440" alt="Screenshot 2023-05-12 at 12 42 42 PM" src="https://github.com/chrisgzim/swiftDialog-Jamf-Protect-Template/assets/101137859/29a81201-68c7-47d4-b1e2-d89cc0288635">
+<img width="1512" alt="Screenshot 2024-10-02 at 3 55 59 AM" src="https://github.com/user-attachments/assets/b8651af4-bc6a-4472-bcd7-57c4c8e2e405">
+
 
 ### Remediation Complete
-<img width="1440" alt="Screenshot 2023-05-12 at 12 42 56 PM" src="https://github.com/chrisgzim/swiftDialog-Jamf-Protect-Template/assets/101137859/b0bcf57e-b5c6-47bb-9df9-0ae32bf048b6">
+<img width="1512" alt="Screenshot 2024-10-02 at 3 56 17 AM" src="https://github.com/user-attachments/assets/c975a54b-89c1-4de1-86cf-8c3aef77a499">
 
